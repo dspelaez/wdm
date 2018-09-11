@@ -1,1 +1,13 @@
 .DS_Store
+*.pyc
+*.pyo
+*.png
+*.pdf
+build/
+dist/
+test/data/
+test/data.zip
+tools.egg-info/
+tools/*.png
+tools/*.pdf
+__pycache__/
