@@ -1,7 +1,0 @@
-wdm/__init__.py
-wdm/main.py
-wdm.egg-info/PKG-INFO
-wdm.egg-info/SOURCES.txt
-wdm.egg-info/dependency_links.txt
-wdm.egg-info/not-zip-safe
-wdm.egg-info/top_level.txt
