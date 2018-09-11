@@ -13,7 +13,7 @@ File:     setup.py
 Created:  2018-06-13 16:46
 """
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 setup(name = 'wdm',
       version = '0.1',
@@ -22,5 +22,5 @@ setup(name = 'wdm',
       author = 'Daniel Santiago',
       author_email = 'dspelaez@gmail.com',
       license = 'GNU',
-      packages = ['wdm'],
+      packages = find_packages(),
       zip_safe = False)
