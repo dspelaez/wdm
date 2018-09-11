@@ -23,4 +23,5 @@ setup(name = 'wdm',
       author_email = 'dspelaez@gmail.com',
       license = 'GNU',
       packages = find_packages(),
+      install_requires = find_packages(),
       zip_safe = False)

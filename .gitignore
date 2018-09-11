@@ -7,7 +7,5 @@ build/
 dist/
 test/data/
 test/data.zip
-tools.egg-info/
-tools/*.png
-tools/*.pdf
+wdm.egg-info/
 __pycache__/
