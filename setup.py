@@ -18,7 +18,7 @@ from setuptools import setup, find_packages
 setup(name = 'wdm',
       version = '0.1',
       description = 'Wavelet Directional Method python implementation',
-      url = '',
+      url = 'https://github.com/dspelaez/wdm/tree/master/wdm',
       author = 'Daniel Santiago',
       author_email = 'dspelaez@gmail.com',
       license = 'GNU',
