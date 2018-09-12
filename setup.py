@@ -23,5 +23,8 @@ setup(name = 'wdm',
       author_email = 'dspelaez@gmail.com',
       license = 'GNU',
       packages = find_packages(),
-      install_requires = find_packages(),
+      install_requires = [
+          "numpy==1.14.3",
+          "scipy==1.1.0",
+          ],
       zip_safe = False)
