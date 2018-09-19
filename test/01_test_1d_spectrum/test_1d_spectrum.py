@@ -23,8 +23,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.signal as signal
 #
-from tools.wdm import cwt
-from tools.spectra import pwelch, jonswap, randomphase1d
+from wdm import cwt
+from wdm.spectra import pwelch, jonswap, randomphase1d
 #
 plt.ion()
 

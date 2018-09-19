@@ -19,7 +19,7 @@ import matplotlib.ticker as ticker
 import scipy.signal as signal
 import os
 #
-from tools.wdm import cwt
+from wdm import cwt
 #
 plt.ion()
 

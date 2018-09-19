@@ -24,8 +24,7 @@ import matplotlib.pyplot as plt
 import scipy.signal as signal
 import os
 #
-from tools.spectra import dirspec, randomphase2d
-from tools.graphs import polar_spectrum
+from wdm.spectra import dirspec, randomphase2d, polar_spectrum
 #
 plt.ion()
 

@@ -20,10 +20,9 @@ import matplotlib.pyplot as plt
 import scipy.interpolate as interpolate
 plt.ion()
 #
-from tools.graphs import polar_spectrum
-from tools.spectra import dirspec, randomphase2d
-from tools.wdm import (reg_array, coarray, wavelet_spectrogram,
-                       klcomponents, fdir_spectrum, smooth, psd)
+from wdm.spectra import dirspec, randomphase2d, polar_spectrum
+from wdm.coarray import reg_array, co_array
+from wdm import wavelet_spectrogram, klcomponents, fdir_spectrum, smooth
 #
 import os
 
@@ -38,6 +37,7 @@ def main(tag, x, y):
         tag: case in 'narrow', 'broad', 'bimodal' 
         x,y: position of wavestaffs
     """
+
     # --- propose a directional spectrum ---
     fs    = 5.0                                                   # <--- sampling frequency
     L     = 2**12                                                 # <--- length of data
@@ -175,8 +175,8 @@ def main(tag, x, y):
 if __name__ == "__main__":
 
     # --- get an pentagon-shaped array separated 0.9 m ---
-    x, y = reg_array(N=5, R=0.9)
-    coarray(x, y, plot=True, filename='pentagon_coarray.png')
+    x, y = reg_array(N=5, R=0.9, theta_0=-180)
+    co_array(x, y, plot=True, filename='pentagon_coarray.png')
 
     # --- loop for each case ---
     for tag in ['narrow', 'broad', 'bimodal']:

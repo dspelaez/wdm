@@ -1,21 +1,18 @@
 #! /usr/bin/env python
 # -*- coding: utf-8 -*-
 # vim:fenc=utf-8
-# vim:fdm=marker
 #
 # =============================================================
-#  Copyright © 2018 Daniel Santiago <dpelaez@cicese.edu.mx>
+#  Copyright © 2017 Daniel Santiago <dpelaez@cicese.edu.mx>
 #  Distributed under terms of the GNU/GPL license.
 # =============================================================
 
 """
-File:     __init__.py
-Created:  2018-06-13 17:05
+File:     graphs.py
+Created:  2017-03-22 11:03
 """
 
-# main module
-from .wdm import *
-from .coarray import *
+# --- import libs ---
+import numpy as np
 
-# this module is used only for the tests
-from . import spectra
+

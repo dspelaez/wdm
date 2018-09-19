@@ -26,5 +26,6 @@ setup(name = 'wdm',
       install_requires = [
           "numpy==1.14.3",
           "scipy==1.1.0",
+          "matplotlib==2.2.3"
           ],
       zip_safe = False)
