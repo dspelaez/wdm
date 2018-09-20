@@ -90,18 +90,18 @@ def main(tag, x, y):
             A, x, y, fs, omin, omax, nvoice, ws=(30,1))
 
     # --- plot directional spectra for jonswap ---
-    fig = plt.figure(figsize=(4.0,3.1))
-    ax = fig.add_subplot(111)
-    polar_spectrum(frqs, dirs, E_jonswap, fmax=.4, ax=ax, cbar=True, label=True, smin=-2, smax=2)
-    ax.set_title("m$^2$Hz$^{-1}$rad$^{-1}$", loc="right", x=1.25, y=1.025)
-    fig.savefig('jonswap_spectra_%s.png' % tag)
-
-    fig = plt.figure(figsize=(4.0,3.1))
-    ax = fig.add_subplot(111)
-    polar_spectrum(frequencies, directions, E_donelan, 
-            fmax=.4, ax=ax, cbar=True, label=True, smin=-2, smax=2)
-    ax.set_title("m$^2$Hz$^{-1}$rad$^{-1}$", loc="right", x=1.25, y=1.025)
-    fig.savefig('donelan_spectra_%s.png' % tag)
+    fig = plt.figure(figsize=(7.0,3))
+    ax1 = fig.add_subplot(121)
+    ax2 = fig.add_subplot(122)
+    #
+    polar_spectrum(frqs, dirs, E_jonswap, fmax=.4,
+            ax=ax1, cbar=False, label=True, smin=-2, smax=2)
+    ax1.set_title("m$^2$Hz$^{-1}$rad$^{-1}$", loc="right", x=1.25, y=1.025)
+    #
+    polar_spectrum(frequencies, directions, E_donelan, fmax=.4,
+            ax=ax2, cbar=True, label=True, smin=-2, smax=2)
+    ax2.set_title("m$^2$Hz$^{-1}$rad$^{-1}$", loc="right", x=1.25, y=1.025)
+    fig.savefig('wdm_spectra_%s.png' % tag)
 
 # --- }}}
 
@@ -109,7 +109,7 @@ def main(tag, x, y):
 if __name__ == "__main__":
 
     # --- get an pentagon-shaped array separated 0.9 m ---
-    x, y = reg_array(N=5, R=0.9, theta_0=-180)
+    x, y = reg_array(N=5, R=0.9, theta_0=0)
     co_array(x, y, plot=True, filename='pentagon_coarray.png')
 
     # --- loop for each case ---
