@@ -41,115 +41,36 @@ import scipy.signal as signal
 import scipy.interpolate as interpolate
 import os
 
-
-# --- define mother wavelet ---
-# {{{
-def morlet(scale, omega, omega0=6.):
-    return (np.pi ** -.25) * np.exp(-0.5 * (scale * omega - omega0) ** 2.)
-# }}}
-
-# --- continuous wavelet transform ---
-# {{{
-def cwt(x, fs, freqs, mother=morlet):
-    """
-    This function compute the continuous wavelet transform
-    
-    Input:
-        x      : time series
-        fs     : sampling frquency [Hz]
-        freqs  : array of frequencies
-        mother : function to compute the cwt
-
-    Output:
-        freqs, W:
-    """
-
-    # compute scales
-    if mother == morlet:
-        f0 = 6.
-        flambda = (4 * np.pi) / (f0 + np.sqrt(2. + f0 ** 2.))
-    else:
-        raise NotImplementedError("Only Mortet was defined so far.")
-
-    # scale
-    scale = 1. / (freqs * flambda)
-
-    # number of times and number of scales
-    ntime  = len(x)
-    nscale = len(scale)
-
-    # fourier frequencies
-    omega  = 2 * np.pi * np.fft.fftfreq(ntime, 1./fs)
-
-    # loop for fill the window and scales of wavelet
-    k = 0
-    w = np.zeros((nscale, ntime))
-    for k in range(nscale):
-        w[k,:] = np.sqrt(scale[k] * omega[1] * ntime) * mother(scale[k], omega)
-
-    # fourier transform of signal
-    fft = np.fft.fft(x)
-
-    # convolve window and transformed series
-    fac = np.sqrt(2 / fs / flambda)
-    return fac *  np.fft.ifft(fft[None,:] * w, ntime)
-# }}}
-
-# --- continuous wavelet transform - bertran chapron ---
-# {{{
-def cwt_bc(x, fs, freqs, mother=morlet):
-    """
-    This function compute the continuous wavelet transform
-    
-    Input:
-        x      : time series
-        fs     : sampling frquency [Hz]
-        freqs  : array of frequencies
-        mother : function to compute the cwt
-
-    Output:
-        freqs, W:
-    """
-    
-    # number of times and number of scales
-    ntime  = len(x)
-    nscale = len(freqs)
-
-    # mother function
-    def morlet(s):
-        nu  = s * fs * np.arange(1, ntime/2+1) / ntime
-        return np.exp(-1./np.sqrt(2) * ((nu - 1)/0.220636)**2.)
-
-    # loop for fill the window and scales of wavelet
-    k = 0
-    w = np.zeros((nscale, int(ntime/2)))
-    for k in range(nscale):
-        w[k,:] = morlet(1./freqs[k])
-
-    # real fourier transform of signal
-    fft = np.fft.fft(x)
-    fft = fft[1:int(ntime/2)+1]
-    fft[0] /= 2.
-
-    # convolve window and transformed series
-    return np.fft.ifft(2. * fft[None,:] * w, ntime)
-# }}}
+from .wavelet import getfreqs, morlet, cwt, cwt_bc
 
 
-# --- function to compute wavelet spectrograms of each wavestaff ----
-# {{{
+
+# wavelet spectrograms of each wavestaff {{{
 def wavelet_spectrogram(A, fs, omin=-6, omax=1, nvoice=16, mode='TC98'):
-    """This function computes the wavelet spectrogram of an array of timeseries."""
+    """This function computes the wavelet spectrogram of an array of timeseries.
+    
+    Args:
+        A (NxM Array): Surface elevation for each N wavestaff and M time.
+        fs (float): sampling frequency.
+        omin (int): Minimun octave. It means fmin = 2^omin
+        omax (int): Maximum octave. It means fmax = 2^omax
+        nvoice (int): Number of voices. It means number of points between each
+            order of magnitud. For example between 2^-4 and 2^-3 will be nvoice
+            intermediate points.
+        mode (str): String to define if CWT is computing follong Torrence and
+            Compo (1998) method (TC98) or Bertrand Chapron's (BC).
+    
+    """
 
-    # --- define scales ---
-    freqs = 2.**np.linspace(omin, omax, nvoice * abs(omin-omax)+1)
+    # define scales 
+    freqs = getfreqs(omin, omax, nvoice)
 
-    # --- compute useful variables ---
+    # compute length of variables 
     ntime, npoints = A.shape 
     nfrqs = len(freqs)
 
-    # --- compute wavelet coefficients ---
-    W = np.zeros((nfrqs, ntime, npoints), 'complex')
+    #  compute wavelet coefficients
+    W = np.zeros((nfrqs, ntime, npoints), dtype='complex')
     for i in range(npoints):
         if mode == "TC98":
             W[:,:,i] = cwt(A[:,i], fs, freqs)
@@ -158,23 +79,21 @@ def wavelet_spectrogram(A, fs, omin=-6, omax=1, nvoice=16, mode='TC98'):
         else:
             raise ValueError("Mode must be TC98 or BC")
 
-    # --- return wavelets coefficients
     return freqs, W
 # }}}
 
-# --- function to compute wavenumber from spectrogram and array geometry ---
-# {{{
+# wavenumber from spectrogram and array geometry {{{
 def klcomponents(W, x, y, *args, **kwargs):
     """
     This function computes the directional wave spectrum using the
     Wavelete Directional Method proposed by Donelan et al. (1996)
 
-    Input:
+    Args:
         W    : [2d-array] Wavelet coefficients
         x    : [2d-array] time varying x-coordinate of wavestaffs
         y    : [2d-array] time varying y-coordinate of wavestaffs
 
-    Output:
+    Returns:
         k,l  : [2d-array] least square estimation of kk components
 
     """
@@ -188,6 +107,12 @@ def klcomponents(W, x, y, *args, **kwargs):
     nfrqs, ntime, npoints = W.shape
     neqs    = int(npoints * (npoints-1) / 2)
     npairs  = int(neqs * (neqs-1) / 2)
+
+    # check if position change in time
+    if x.ndim == 2 and y.ndim == 2:
+        pass
+    else:
+        x, y = np.tile(x,(ntime,1)), np.tile(y, (ntime,1))
 
     # --- loop for N unique pairs of equations ---
     X = np.zeros((ntime, neqs, 2))          # <--- matrix of distances
@@ -221,25 +146,24 @@ def klcomponents(W, x, y, *args, **kwargs):
     #       kk^LS = (X^T X)^-1 X^T phi
     #
     # function to compute wavenumber vector
-    def kk(X, Dphi):
+    def wavenumber_solver(X, Dphi):
         return np.linalg.inv(X.T.dot(X)).dot(X.T).dot(Dphi)
 
     # TODO: define function to solve point to point
     #
     # evaluate function at each f-t point.
-    k = np.zeros((nfrqs, ntime))
-    l = np.zeros((nfrqs, ntime))
+    kx = np.zeros((nfrqs, ntime))
+    ky = np.zeros((nfrqs, ntime))
     for i in range(nfrqs):
         for j in range(ntime):
-            k[i,j], l[i,j] = kk(X[j], Dphi[i,j,:])
+            kx[i,j], ky[i,j] = wavenumber_solver(X[j], Dphi[i,j,:])
     
     # return k and l
-    return k, l
+    return kx, ky
 # }}}
 
-# --- function to compute directional spreading function ---
-# {{{
-def directional_spreading(frqs, power, k, l):
+# directional spreading function {{{
+def directional_spreading(frqs, power, kx, ky):
     """
     Input:
         frqs       [1d-array] : Frequencies in Hz.
@@ -255,20 +179,19 @@ def directional_spreading(frqs, power, k, l):
     dirs = np.arange(0, 360, 1)
 
     # compute magnitude and direction of wavenumber
-    kappa = np.abs(k + 1j*l)
-    theta = np.arctan2(l, k) # -> angle points the direction towards waves goes
+    kappa = np.abs(kx + 1j*ky)
+    theta = np.arctan2(ky, kx) # -> angle points the direction towards waves goes
 
     # round angles to a resolution of 1 degree and correct
     # angle to be measured counterclockwise from east
-    theta[theta <= 0] += 2. * np.pi
-    theta_degrees = np.round(theta * 180./np.pi)
+    theta_degrees = np.round(theta * 180./np.pi) % 360
 
     # length of arrays
     nfrqs, ntime = power.shape
     ndirs = len(dirs)
 
     # loop for each frequency
-    D = np.zeros((ndirs,nfrqs), 'float')
+    D = np.zeros((ndirs,nfrqs), dtype='float')
     for j in range(nfrqs):
         
         # loop for each direction
@@ -284,8 +207,7 @@ def directional_spreading(frqs, power, k, l):
     return D
 # }}}
 
-# --- function to smooth 2d arrays ---
-# {{{
+# smooth 2d arrays {{{
 def smooth(F, ws=(5,1)):
     """
     This function takes as an argument the directional spectrum or
@@ -315,8 +237,7 @@ def smooth(F, ws=(5,1)):
     return signal.convolve2d(F, window, mode='same', boundary='wrap')
 # }}}
 
-# --- function to interpolate spectrogram at specific frequencies ---
-# {{{
+# interpolate spectrogram at specific frequencies {{{
 def interpfrqs(S, frqs, new_frqs):
     """
     This function remap the log-spaced frequencies into linear frequencies
@@ -330,8 +251,7 @@ def interpfrqs(S, frqs, new_frqs):
     return interpolate.interp1d(frqs, S, fill_value='extrapolate')(new_frqs)
 # }}}
 
-# --- function to compute frequency - direction spectrum
-# --- {{{
+# frequency - direction spectrum {{{
 def fdir_spectrum(A, x, y, fs=10, omin=-6, omax=2, nvoice=16, ws=(30,1)):
     """Simple and ugly implementation of Wavelet Directional Method.
 

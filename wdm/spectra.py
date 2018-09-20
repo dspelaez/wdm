@@ -28,52 +28,7 @@ from matplotlib.colors import LogNorm, LinearSegmentedColormap
 from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 
 
-# --- fourier periodogram ---
-# TODO:
-#     - [ ] add compute of degrees of freedom
-# {{{
-def pwelch(x, fs=1.0, window=None, winsize=256, noverlap=0, m=1):
-    """
-    This function computes the periodogram of a time series using
-    welch method and apply a filter to smooth the resultad data.
-
-    Input:
-        x        : Time series
-        fs       : Sampling frequency
-        winsize  : Window size in points
-        noverlap : Number of overlaps in points
-        m        : Number of frequencies to smooth
-                   If m <= 1 the function does not apply the filter
-    Output:
-        frqs     : Frequencies
-        power    : Power or energy density
-    """
-
-    # get window:
-    if window is None:
-        window = 'boxcar'
-    else:
-        pass
-
-    # remove trend
-    x_detrended = signal.detrend(x)
-
-    # compute freqs and energy unisg signal.welch
-    frqs, power = signal.welch(x_detrended, window=window, fs=fs,
-                               nperseg=winsize, noverlap=noverlap)
-
-    # smooth spectrum
-    if m > 1:
-        win = signal.hamming(m)
-        win = win / win.sum()
-        power_smoothed = np.convolve(power, win, 'same')
-        return frqs, power_smoothed
-    else:
-        return frqs, power
-# }}}
-
-# --- jonswap funcion ---
-# {{{
+# jonswap funcion {{{
 def jonswap(frqs, Hs, Tp, gamma=3.3):
     """
     This function computes the shape of the JONSWAP spectrum for
@@ -134,8 +89,7 @@ def jonswap(frqs, Hs, Tp, gamma=3.3):
     return S
 # }}}
 
-# --- directional spreading function ---
-# {{{
+# directional spreading function {{{
 def dirspec(frqs, dirs, Hs, Tp, mdir, func="cos2s", s=1):
     """
     This function computes the directional spreading funcion using two well-known
@@ -210,8 +164,7 @@ def dirspec(frqs, dirs, Hs, Tp, mdir, func="cos2s", s=1):
     return S
 # }}}
 
-# --- function random phase 1d ---
-# {{{
+# function random phase 1d {{{
 def randomphase1d(t, frqs, S):
     """
     This function computes the sea surface elevation from a
@@ -246,8 +199,7 @@ def randomphase1d(t, frqs, S):
     return eta
 # }}}
 
-# --- function random phase 2d ---
-# {{{
+# function random phase 2d {{{
 def randomphase2d(frqs, dirs, S):
     """
     This function computes the sea surface elevation from a
@@ -313,244 +265,7 @@ def randomphase2d(frqs, dirs, S):
     return eta
 # }}}
 
-# --- wavenumber from dispersion relation ---
-# {{{
-def wavenumber(f, d, mode="hunt"):
-    """
-    mode = "exact"
-    --------------
-    Calculo del numero de onda usando la relacion de dispersion de la teoria
-    lineal resuelta con un metodo iterativo (punto fijo) sin tener en cuenta
-    el efecto doppler de las corrientes en la frecuencia de las olas.
-            2
-          w    =   g * k * tanh(k*h)    --->    w  = 2*pi*f
-
-    mode = "hunt"  (default)
-    ------------------------
-    Calculo del numero de onda usando la aproximacion empirica propuesta por Hunt 1979
-              2        2             y
-          (kh)    =   y   +  --------------------
-                                   6
-                                 ----      n
-                             1 + \    d   y
-                                 /     n
-                                 ----
-                                 n = 1
-               2
-          y = w  h  / g
-
-          d0 = [0.666, 0.355, 0.161, 0.0632, 0.0218, 0.0065]
-        """
-
-    if d < 0:
-        raise ValueError("Depth must be positive")
-
-    if mode == "exact":
-        #
-        tol = 1e-9
-        maxiter = 1000000
-        g = 9.8
-        w = 2.* np.pi * f
-        k0 = (w**2.)/g
-        for cnt in range(maxiter):
-            k = (w**2)/(g*np.tanh(k0*d))
-            k0 = k
-            if all(abs(k - k0) >= tol):
-                return k0
-        return k
-
-    elif mode == "hunt":
-        #
-        d0 = [0.666, 0.355, 0.161, 0.0632, 0.0218, 0.0065]
-        g = 9.8
-        w = 2.* np.pi * f
-        y = (w**2)*d/g
-        #
-        poly = np.zeros_like(f)
-        for n, dn in enumerate(d0):
-            poly = poly + dn * y**(n+1)
-        #
-        k = np.sqrt(y**2 + y/(1 + poly))/d
-
-        return k
-        #
-    else:
-        raise ValueError("`mode` must br `hunt` o `exact`")
-# }}}
-
-# --- "zero_crossing" function ---
-# {{{
-def zero_crossing(t, x):
-    """
-    Esta funcion calcula la altura de ola significante, el periodo de pasos
-    ascendentes por cero y la longitud de onda asociada a ese periodo.
-    """
-
-    # Calculos de los puntos
-    # ----------------------
-    # Re-muestro del vector
-    tt = np.linspace(t[0], t[-1], len(t)*100)
-    xx = np.interp(tt, t, x)
-
-    # Encontrar el indice con los ceros
-    ix     = np.diff(np.sign(xx))
-    ix_up, = np.where(ix > 0)
-
-    # Encontrar la altura y el periodo de cada ola
-    H, T = np.zeros(len(ix_up)-1), np.zeros(len(ix_up)-1)
-    for i in range(len(ix_up) - 1):
-        a = ix_up[i]
-        b = ix_up[i+1]
-        H[i] = xx[a:b].max() - xx[a:b].min()
-        T[i] = tt[b] - tt[a]
-
-    # Calculos de los parametros
-    # --------------------------
-    H0 = np.sort(H)
-    Hz = H0[2*len(H)/3:].mean()
-
-    Tz = np.mean(T)
-
-    return Hz, Tz
-# }}}
-
-# --- bulk parameters ---
-# {{{
-def bulkparams(f, S, var="Hm0", d=None):
-    """Compute bulk parameters from frequency spectrum.
-    
-     * Hm0   = 4*sqrt(m0)                              Significant wave height
-     * Tm01  = 2*pi*m0/m1                              Mean wave period
-     * Tm02  = 2*pi*sqrt(m0/m2)                        Mean zero-crossing period
-     * Tm24  = 2*pi*sqrt(m2/m4)                        Mean period between maxima
-     * Tm_10 = 2*pi*m_1/m0                             Energy period
-     * Tp    = 2*pi/{w | max(S(w))}                    Peak period
-     * Lp    = {Dispersion relation}                   Peak wavelength
-     * ak    = sqrt(int k^2 S(w) dw)                   Wave steepness
-     * Ss    = 2*pi*Hm0/(g*Tm02^2)                     Significant wave steepness
-     * Sp    = 2*pi*Hm0/(g*Tp^2)                       Average wave steepness
-     * Ka    = abs(int S(w)*exp(i*w*Tm02) dw ) /m0     Groupiness parameter
-     * Rs    = (S(0.092)+S(0.12)+S(0.15)/(3*max(S(w))) Quality control parameter (must be Rs<0.02)
-               2*pi*int S(w)^4 dw
-     * Tp1   = ------------------                      Peak Period (robust estimate for Tp)
-               int w*S(w)^4 dw
-     * Lp1   = {Dispersion relation}                   Peak wavelength (robust estimate for Tp)
-     * alpha = m2/sqrt(m0*m4)                          Irregularity factor
-     * eps2  = sqrt(m0*m2/m1^2-1)                      Narrowness factor
-     * eps4  = sqrt(1-m2^2/(m0*m4))=sqrt(1-alpha^2)    Broadness factor
-     * Qp    = (2/m0^2)int_0^inf w*S(w)^2 dw           Peakedness factor
-
-    """
-
-    _varList = "Hm0 Tm01 Tm02 Tm24 Tm_10 Tp Ss Sp Ka Rs Tp1 alpha eps2 eps4 Qp".split()
-
-    # turn to angular frequency spectrum
-    pi = np.pi
-    g = 9.80
-    w  = 2. * pi * f
-    Sw = S / (2. * pi)
-
-    # computes m,n oder moments of the spectrum
-    # indices <<mn>> represents the exponents of f and S respectivaly
-    m = lambda n, p: np.trapz((w**n)*(Sw**p), x=w)
-
-    # for each params
-    if var in ["Hm0", "Hs"]:
-        Hm0 = 4.*np.sqrt(m(0,1))
-        return Hm0
-    #
-    elif var == "Tm01":
-        Tm01 = 2.*pi*m(0,1)/m(1,1)
-        return Tm01
-    #
-    elif var == "Tm02":
-        Tm02 = 2.*pi*np.sqrt(m(0,1)/m(2,1))
-        return Tm02
-    #
-    elif var == "Tm24":
-        Tm24 = 2.*pi*np.sqrt(m(2,1)/m(4,1))
-        return Tm24
-    #
-    elif var == "Tm_10":
-        Tm_10 = 2.*pi*m(-1,1)/m(0,1)
-        return Tm_10
-    #
-    elif var == "Tp":
-        Tp = 2.*pi/w[Sw.argmax(axis=0)]
-        return Tp
-    #
-    elif var == "Lp":
-        if d is not None:
-            Tp = 2.*pi/w[Sw.argmax(axis=0)]
-            Lp = 2.*pi/wavenumber(1./Tp, d)
-            return Lp
-        else:
-            raise ValueError("You must specify a depth d")
-    #
-    elif var == "ak":
-        k = wavenumber(f, d)
-        ak = (np.trapz((k**2)*Sw, x=w))**0.5
-        return ak
-    #
-    elif var == "Ss":
-        Hm0 = 4.*np.sqrt(m(0,1))
-        Tm02 = 2.*pi*np.sqrt(m(0,1)/m(2,1))
-        Ss = 2.*pi*Hm0/g/Tm02**2.
-        return Ss
-    #
-    elif var == "Sp":
-        Hm0 = 4.*np.sqrt(m(0,1))
-        Tp = 2.*pi/w[Sw.argmax(axis=0)]
-        Sp = 2.*pi*Hm0/g/Tp**2.
-        return Sp
-    #
-    elif var == "Ka":
-        Tm02 = 2.*pi*np.sqrt(m(0,1)/m(2,1))
-        Ka = abs(np.trapz(Sw*np.exp(1j*w*Tm02), x=w))/m(0,1)
-        return Ka
-    #
-    elif var == "Rs":
-        Rs = np.sum(np.interp(np.array([0.092, 0.12, 0.15]), w, Sw))/3./Sw.max()
-        return Rs
-    #
-    elif var == "Tp1":
-        Tp1 = 2.*pi*m(0,4)/m(1,4)
-        return Tp1
-    #
-    elif var == "Lp1":
-        if d is not None:
-            Tp1 = 2.*pi*m(0,4)/m(1,4)
-            Lp1 = 2.*pi/wavenumber(1./Tp1, d)
-            return Lp1
-        else:
-            raise ValueError("You must specify a depth d")
-    #
-    elif var == "alpha":
-        alpha = m(2,1)/np.sqrt(m(0,1)*m(4,1))
-        return alpha
-    #
-    elif var == "eps2":
-        eps2 = np.sqrt(m(0,1)*m(2,1)/m(1,1)**2. - 1.)
-        return eps2
-    #
-    elif var == "eps4":
-        alpha = m(2,1)/np.sqrt(m(0,1)*m(4,1))
-        eps4 = np.sqrt(1 - alpha**2)
-        return eps4
-    #
-    elif var == "Qp":
-        Qp = (2./m(0,1)**2)*m(1,2)
-        return Qp
-    #
-    elif var == "list":
-        return _varList
-    #
-    else:
-        raise NotImplementedError
-# }}}
-
-# --- function to plot dirctional spectrum in a polar graph ---
-# {{{
+# plot dirctional spectrum in a polar graph {{{
 def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
     """
     This function plots the frequency-direction spectrum or
@@ -624,7 +339,6 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
     
     # crear malla en el espacio frecuencial (Fx, Fy)
     F, D = np.meshgrid(frqs, dirs)
-    # Fx, Fy = F*np.cos(D*np.pi/180), F*np.sin(D*np.pi/180)
     Fx, Fy = F*np.cos(np.radians(D+thetam)), F*np.sin(np.radians(D+thetam))
 
     # create colormap
@@ -659,10 +373,10 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
         ax.text(0.05, 0.50, "W", transform=ax.transAxes, ha="center", va="center")
 
     ax.set_xticks(fticks)
-    ax.set_xticklabels(np.abs(fticks))
+    ax.set_xticklabels([f"{np.abs(i):.1f}" for i in fticks])
     #
     ax.set_yticks(fticks)
-    ax.set_yticklabels(np.abs(fticks))
+    ax.set_yticklabels([f"{np.abs(i):.1f}" for i in fticks])
     #
     ax.set_xlim([-fticks[-1], fticks[-1]])
     ax.set_ylim([-fticks[-1], fticks[-1]])
@@ -695,8 +409,7 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
         fig.savefig(kwargs['filename'])
 # }}}
 
-# --- create colorbar ---
-# {{{
+# create colorbar {{{
 def colorax(ax, **kwargs):
     """Create a colobar without reducing parent axes size."""
     #
