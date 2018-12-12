@@ -3,6 +3,8 @@
 *.pyo
 *.png
 *.pdf
+*.so
+*.dSYM
 build/
 dist/
 test/data/

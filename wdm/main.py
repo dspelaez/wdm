@@ -8,7 +8,7 @@
 # =============================================================
 
 """
-File:     wdm.py
+File:     main.py
 Created:  2017-03-19 11:13
 Modified: 2017-04-10 18:02
 
@@ -42,7 +42,8 @@ import scipy.interpolate as interpolate
 import os
 
 from .wavelet import getfreqs, morlet, cwt, cwt_bc
-
+from .core import (check_dimensions, position_and_phase,
+        compute_wavenumber, directional_spreading) 
 
 
 # wavelet spectrograms of each wavestaff {{{
@@ -83,7 +84,7 @@ def wavelet_spectrogram(A, fs, omin=-6, omax=1, nvoice=16, mode='TC98'):
 # }}}
 
 # wavenumber from spectrogram and array geometry {{{
-def klcomponents(W, x, y, *args, **kwargs):
+def klcomponents(W, x, y, limit=np.pi):
     """
     This function computes the directional wave spectrum using the
     Wavelete Directional Method proposed by Donelan et al. (1996)
@@ -134,12 +135,10 @@ def klcomponents(W, x, y, *args, **kwargs):
             # acumulate counter
             ij += 1
 
-    # --- contrains of phase differences ---
+    # --- constrains of phase differences ---
     # Dphi[Dphi >  np.pi] -= 2. * np.pi
     # Dphi[Dphi < -np.pi] += 2. * np.pi
-    limit = kwargs.get('limit', np.pi)
-    mask  = kwargs.get('mask',  np.nan)
-    Dphi[np.abs(Dphi) > limit] = mask
+    Dphi[np.abs(Dphi) > limit] = np.nan
 
     # --- least square estimation of vector kk=(k, l) ---
     #     the LSR of kk is given by:

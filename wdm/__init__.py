@@ -14,7 +14,7 @@ Created:  2018-06-13 17:05
 """
 
 # main module
-from .wdm import *
+from .main import *
 from .coarray import *
 
 # this module is used only for the tests

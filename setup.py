@@ -13,19 +13,25 @@ File:     setup.py
 Created:  2018-06-13 16:46
 """
 
-from setuptools import setup, find_packages
+from numpy.distutils.core import Extension, setup
 
-setup(name = 'wdm',
-      version = '0.1',
-      description = 'Wavelet Directional Method python implementation',
-      url = 'https://github.com/dspelaez/wdm/tree/master/wdm',
-      author = 'Daniel Santiago',
-      author_email = 'dspelaez@gmail.com',
-      license = 'GNU',
-      packages = find_packages(),
-      install_requires = [
-          "numpy==1.14.3",
-          "scipy==1.1.0",
-          "matplotlib==2.2.3"
-          ],
-      zip_safe = False)
+ext = Extension(name = 'wdm.core',
+                sources = ['./wdm/core.f90'])
+
+if __name__ == "__main__":
+
+    setup(name = 'wdm',
+          version = '0.2',
+          description = 'Python implementation of the Wavelet Directional Method',
+          url = 'https://github.com/dspelaez/wdm',
+          author = 'Daniel Santiago',
+          author_email = 'dspelaez@gmail.com',
+          license = 'GNU',
+          packages = (),
+          ext_modules = [ext],
+          install_requires = [
+              "numpy==1.14.3",
+              "scipy==1.1.0",
+              "matplotlib==2.2.3"
+              ],
+          zip_safe = False)
