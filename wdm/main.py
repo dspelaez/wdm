@@ -42,17 +42,17 @@ import scipy.interpolate as interpolate
 import os
 
 from .wavelet import getfreqs, morlet, cwt, cwt_bc
-from .core import (check_dimensions, position_and_phase,
-        compute_wavenumber, directional_spreading) 
+from .core import (position_and_phase, compute_wavenumber,
+                   directional_spreading) 
 
 
 # wavelet spectrograms of each wavestaff {{{
-def wavelet_spectrogram(A, fs, omin=-6, omax=1, nvoice=16, mode='TC98'):
+def wavelet_spectrogram(A, fs, omin=-6, omax=2, nvoice=32, mode='TC98'):
     """This function computes the wavelet spectrogram of an array of timeseries.
     
     Args:
         A (NxM Array): Surface elevation for each N wavestaff and M time.
-        fs (float): sampling frequency.
+        fs (float): Sampling frequency.
         omin (int): Minimun octave. It means fmin = 2^omin
         omax (int): Maximum octave. It means fmax = 2^omax
         nvoice (int): Number of voices. It means number of points between each
@@ -81,129 +81,6 @@ def wavelet_spectrogram(A, fs, omin=-6, omax=1, nvoice=16, mode='TC98'):
             raise ValueError("Mode must be TC98 or BC")
 
     return freqs, W
-# }}}
-
-# wavenumber from spectrogram and array geometry {{{
-def klcomponents(W, x, y, limit=np.pi):
-    """
-    This function computes the directional wave spectrum using the
-    Wavelete Directional Method proposed by Donelan et al. (1996)
-
-    Args:
-        W    : [2d-array] Wavelet coefficients
-        x    : [2d-array] time varying x-coordinate of wavestaffs
-        y    : [2d-array] time varying y-coordinate of wavestaffs
-
-    Returns:
-        k,l  : [2d-array] least square estimation of kk components
-
-    """
-
-    # --- compute phase and power for each frequency and time
-    power = np.abs(W)**2
-    power = power.mean(2)
-    phase = np.arctan2(-W.imag, W.real) # -> cartesian towards
-
-    # --- dimensions ---
-    nfrqs, ntime, npoints = W.shape
-    neqs    = int(npoints * (npoints-1) / 2)
-    npairs  = int(neqs * (neqs-1) / 2)
-
-    # check if position change in time
-    if x.ndim == 2 and y.ndim == 2:
-        pass
-    else:
-        x, y = np.tile(x,(ntime,1)), np.tile(y, (ntime,1))
-
-    # --- loop for N unique pairs of equations ---
-    X = np.zeros((ntime, neqs, 2))          # <--- matrix of distances
-    Dphi = np.zeros((nfrqs, ntime, neqs))   # <--- vector of phase diffs
-    #
-    ij = 0
-    for i in range(npoints-1):
-        for j in range(i+1, npoints):
-            #
-            # distances between pairs for each time
-            for k in range(ntime):
-                dx = x[k,j] - x[k,i]
-                dy = y[k,j] - y[k,i]
-                X[k,ij,:] = [dx, dy] 
-            #
-            # difference of phases
-            Dphi[:,:,ij] = phase[:,:,j] - phase[:,:,i]
-            #
-            # acumulate counter
-            ij += 1
-
-    # --- constrains of phase differences ---
-    # Dphi[Dphi >  np.pi] -= 2. * np.pi
-    # Dphi[Dphi < -np.pi] += 2. * np.pi
-    Dphi[np.abs(Dphi) > limit] = np.nan
-
-    # --- least square estimation of vector kk=(k, l) ---
-    #     the LSR of kk is given by:
-    #       kk^LS = (X^T X)^-1 X^T phi
-    #
-    # function to compute wavenumber vector
-    def wavenumber_solver(X, Dphi):
-        return np.linalg.inv(X.T.dot(X)).dot(X.T).dot(Dphi)
-
-    # TODO: define function to solve point to point
-    #
-    # evaluate function at each f-t point.
-    kx = np.zeros((nfrqs, ntime))
-    ky = np.zeros((nfrqs, ntime))
-    for i in range(nfrqs):
-        for j in range(ntime):
-            kx[i,j], ky[i,j] = wavenumber_solver(X[j], Dphi[i,j,:])
-    
-    # return k and l
-    return kx, ky
-# }}}
-
-# directional spreading function {{{
-def directional_spreading(frqs, power, kx, ky):
-    """
-    Input:
-        frqs       [1d-array] : Frequencies in Hz.
-        power(f,t) [2d-array] : Power wavelet spectrum.
-        k(f,t)     [2d-array] : X-component of wavenumber array.
-        l(f,t)     [2d-array] : Y-component of wavenumber array.
-    
-    Output:
-        D(f,dirs) [2d-array] : Directional spreading function in radians
-    """
-
-    # array of directions each degree
-    dirs = np.arange(0, 360, 1)
-
-    # compute magnitude and direction of wavenumber
-    kappa = np.abs(kx + 1j*ky)
-    theta = np.arctan2(ky, kx) # -> angle points the direction towards waves goes
-
-    # round angles to a resolution of 1 degree and correct
-    # angle to be measured counterclockwise from east
-    theta_degrees = np.round(theta * 180./np.pi) % 360
-
-    # length of arrays
-    nfrqs, ntime = power.shape
-    ndirs = len(dirs)
-
-    # loop for each frequency
-    D = np.zeros((ndirs,nfrqs), dtype='float')
-    for j in range(nfrqs):
-        
-        # loop for each direction
-        for i in range(360):
-            ix = theta_degrees[j,:] == i
-            dd = len(ix.nonzero()[0])
-            weight = np.mean(power[j,ix]) if dd != 0 else 0.
-            D[i,j] = dd * weight
-
-    # normalize to satisfy int(D) = 1 for each direction
-    m0 = np.trapz(D, x=dirs*np.pi/180, axis=0)
-    D = D / m0[None,:]
-    return D
 # }}}
 
 # smooth 2d arrays {{{
@@ -251,14 +128,17 @@ def interpfrqs(S, frqs, new_frqs):
 # }}}
 
 # frequency - direction spectrum {{{
-def fdir_spectrum(A, x, y, fs=10, omin=-6, omax=2, nvoice=16, ws=(30,1)):
-    """Simple and ugly implementation of Wavelet Directional Method.
+def fdir_spectrum(A, x, y, fs, limit=np.pi, omin=-6, omax=2,
+                  nvoice=32, ws=(30,1)):
+
+    """Computes the frequency-direction spectrum using the WDM method.
 
     Args:
-        A (array): Surface elevation in the array.
+        A (array): Surface elevation for each probe.
         x (array): Time-varying x position of each probe.
         y (array): Time-varying y position of each probe.
         fs (float): Sampling frequency.
+        limit (float): Limit for phase differences
         omin (float): Min octave.
         omax (float): Max octave.
         nvoice (float): Number of voices.
@@ -269,28 +149,44 @@ def fdir_spectrum(A, x, y, fs=10, omin=-6, omax=2, nvoice=16, ws=(30,1)):
 
     """
 
-    ntime, nprobes = A.shape
+    # check dimensions
+    ntime, npoints = A.shape
     nfft = int(2**np.floor(np.log2(ntime)))
     nperseg = int(nfft / 4)
 
-    # obtain wavelet spectrogram for each gauge
-    frqs, coefs = wavelet_spectrogram(A, fs, omin, omax, nvoice, mode='TC98')
+    # check if x and y varying in time, if not, repeat its value ntimes
+    if x.ndim == 2 and y.ndim == 2:
+        pass
+    else:
+        x, y = np.tile(x,(ntime,1)), np.tile(y, (ntime,1))
 
+    # obtain wavelet frequencies and coefficients for each gauge
+    frqs, wcoefs = wavelet_spectrogram(A, fs, omin, omax, nvoice, mode='TC98')
+
+    # compute phase diffrenence and position
+    # here we use the fortran subroutine `position_and_phase` in core.f90
+    neqs = int(npoints * (npoints-1) / 2)
+    XX, Dphi = position_and_phase(wcoefs, x, y, neqs)
+    if limit:
+        # Dphi[Dphi >  np.pi] -= 2. * np.pi
+        # Dphi[Dphi < -np.pi] += 2. * np.pi
+        Dphi[np.abs(Dphi) > limit] = np.nan
+    #
     # compute components of wavenumber
-    k, l = klcomponents(coefs, x, y, limit=np.pi)
-
-    # compute power density from wavelets coefficients
+    kx, ky = compute_wavenumber(XX, Dphi)
+    
+    # compute power density from wavelet coefficients
     dirs = np.arange(0, 360, 1)
-    power = np.mean(np.abs(coefs) ** 2, axis=2)
+    power = np.mean(np.abs(wcoefs) ** 2, axis=2)
 
     # compute fourier spectrum and interpolate to wavelet frequencies
-    Pxx = np.zeros((int(nperseg/2+1), nprobes))
-    for j in range(nprobes):
+    Pxx = np.zeros((int(nperseg/2+1), npoints))
+    for j in range(npoints):
         f, Pxx[:,j] = signal.welch(A[:,j], fs, "hann", nperseg)
     S = interpfrqs(Pxx.mean(1)[1:], f[1:], frqs)
 
     # compute directional spreading function and frequency direction spectrum
-    D = directional_spreading(frqs, power, k, l)
+    D = directional_spreading(wcoefs, kx, ky)
     E = S[None,:] * D
 
     # smooth
@@ -299,7 +195,6 @@ def fdir_spectrum(A, x, y, fs=10, omin=-6, omax=2, nvoice=16, ws=(30,1)):
 
     return frqs, dirs, E_smoothed, D_smoothed
 # --- }}}
-
 
 
 if __name__ == "__main__":
