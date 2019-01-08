@@ -276,6 +276,7 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
         frqs     : Frequencies in Hz or wavenumbers in rad/m
         dirs     : Directions in degrees
         S        : Energy (dirs, frqs)
+        thetam   : Rotation counter-clockwise
         kwargs   : Optional parameters
          - fmax          : max frequency or wavenumber
          - filename      : if it is given the plot is saved in a file
@@ -298,7 +299,7 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
     Hs   = 4. * np.sqrt(np.trapz(S_int, x=frqs))
     fp   = frqs[np.argmax(S_int)]
     Tp   = 1./fp
-    pdir = dirs[np.argmax(D_int)]
+    pdir = np.mod(dirs[np.argmax(D_int)] + thetam, 360)
     fmax = kwargs.get('fmax', np.round(3.*fp, 1))
 
     # checkar si las direcciones son circulares

@@ -83,6 +83,17 @@ def wavelet_spectrogram(A, fs, omin=-6, omax=2, nvoice=32, mode='TC98'):
     return freqs, W
 # }}}
 
+# fill possible nan values {{{
+def fill_nan(E):
+    '''
+    interpolate to fill nan values
+    '''
+    inds = np.arange(A.shape[0])
+    good = np.where(np.isfinite(A))
+    f = interpolate.interp1d(inds[good], A[good],bounds_error=False)
+    B = np.where(np.isfinite(A),A,f(inds))
+    return B# }}}
+
 # smooth 2d arrays {{{
 def smooth(F, ws=(5,1)):
     """
@@ -91,7 +102,7 @@ def smooth(F, ws=(5,1)):
     dimensions given by winsize.
 
     For example, if a we have a directional spectrum E(360,64) and 
-    ws=(5,2) the filter acts averging 10 directiona and 2 frequencies.
+    ws=(10,2) the filter acts averging 10 directiona and 2 frequencies.
 
     Input:
         F  : Input function
@@ -168,15 +179,16 @@ def fdir_spectrum(A, x, y, fs, limit=np.pi, omin=-6, omax=2,
     neqs = int(npoints * (npoints-1) / 2)
     XX, Dphi = position_and_phase(wcoefs, x, y, neqs)
     if limit:
-        # Dphi[Dphi >  np.pi] -= 2. * np.pi
-        # Dphi[Dphi < -np.pi] += 2. * np.pi
-        Dphi[np.abs(Dphi) > limit] = np.nan
-    #
+        min_phase = 0.0
+        Dphi[Dphi == 0] = min_phase
+        Dphi[Dphi >  limit] = min_phase
+        Dphi[Dphi < -limit] = min_phase
+
     # compute components of wavenumber
     kx, ky = compute_wavenumber(XX, Dphi)
     
     # compute power density from wavelet coefficients
-    dirs = np.arange(0, 360, 1)
+    dirs = np.arange(0, 360)
     power = np.mean(np.abs(wcoefs) ** 2, axis=2)
 
     # compute fourier spectrum and interpolate to wavelet frequencies
@@ -185,15 +197,23 @@ def fdir_spectrum(A, x, y, fs, limit=np.pi, omin=-6, omax=2,
         f, Pxx[:,j] = signal.welch(A[:,j], fs, "hann", nperseg)
     S = interpfrqs(Pxx.mean(1)[1:], f[1:], frqs)
 
-    # compute directional spreading function and frequency direction spectrum
+    # compute directional spreading function
     D = directional_spreading(wcoefs, kx, ky)
+
+    # check nans if they exist fill
+    if np.isnan(D).any():
+        print(frqs[np.isnan(D.mean(0))])
+    
+    # frequency direction spectrum
     E = S[None,:] * D
 
     # smooth
-    D_smoothed = smooth(D, ws)
-    E_smoothed = smooth(E, ws)
-
-    return frqs, dirs, E_smoothed, D_smoothed
+    if ws:
+        D_smooth = smooth(D, ws)
+        E_smooth = smooth(E, ws)
+        return frqs, dirs, E_smooth, D_smooth
+    else:
+        return frqs, dirs, E, D
 # --- }}}
 
 
