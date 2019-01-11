@@ -14,6 +14,7 @@ Created:  2018-06-13 16:46
 """
 
 from numpy.distutils.core import Extension, setup
+from setuptools import find_packages
 
 ext = Extension(name = 'wdm.core',
                 sources = ['./wdm/core.f90'])
@@ -27,7 +28,7 @@ if __name__ == "__main__":
           author = 'Daniel Santiago',
           author_email = 'dspelaez@gmail.com',
           license = 'GNU',
-          packages = (),
+          packages = find_packages(),
           ext_modules = [ext],
           install_requires = [
               "numpy==1.14.3",
