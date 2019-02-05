@@ -293,14 +293,32 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
     """
 
     # parametros integrales
+    # D_int = np.trapz(S, x=frqs, axis=1)
+    # S_int = np.trapz(S, x=dirs*np.pi/180., axis=0)
+    # #
+    # Hs   = 4. * np.sqrt(np.trapz(S_int, x=frqs))
+    # fp   = frqs[np.argmax(S_int)]
+    # Tp   = 1./fp
+    # pdir = np.mod(dirs[np.argmax(D_int)] + thetam, 360)
+
+    # integrate directional wave specrtum
+    rads = np.radians(dirs)
     D_int = np.trapz(S, x=frqs, axis=1)
-    S_int = np.trapz(S, x=dirs*np.pi/180., axis=0)
+    S_int = np.trapz(S, x=rads, axis=0)
     #
-    Hs   = 4. * np.sqrt(np.trapz(S_int, x=frqs))
-    fp   = frqs[np.argmax(S_int)]
-    Tp   = 1./fp
-    pdir = np.mod(dirs[np.argmax(D_int)] + thetam, 360)
-    fmax = kwargs.get('fmax', np.round(3.*fp, 1))
+    # computes m,n oder moments of the spectrum
+    # indices <<mn>> represents the exponents of f and S respectivaly
+    m = lambda n, p: np.trapz((frqs**n)*(S_int**p), x=frqs)
+    # 
+    # compute basic parameters
+    Hs = 4.0 * np.sqrt(m(0,1))
+    Tp = m(0,4) / m(1,4)
+    fp = 1. / Tp
+    #
+    # compute directional params
+    m = lambda n, p: np.trapz((rads**n)*(D_int**p), x=rads)
+    pdir = np.mod(np.degrees(m(1,4) / m(0,4))) + thetahm, 360)
+
 
     # checkar si las direcciones son circulares
     if dirs[-1] != 360.:
@@ -321,18 +339,14 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
 
     # define energy limits
     with np.errstate(divide='ignore'):
-        if 'smin' in kwargs:
-            smin = float(kwargs['smin'])
-        else:
-            smin = np.ceil(np.max([-7, np.log10(S.min())]))
-        #
-        if 'smax' in kwargs:
-            smax = float(kwargs['smax'])
-        else:
-            smax = np.floor(np.min([ 7, np.log10(S.max())])) + 1
+        smin = kwargs.get('smin', np.ceil(np.max([-7, np.log10(S.min())])))
+        smax = kwargs.get('smax', np.floor(np.min([7, np.log10(S.max())]))+1)
+
 
     # draw frequency/wavenumber circles 
-    fticks = np.append(np.linspace(-fmax, 0, 5), np.linspace(0, fmax, 5)[1:])
+    fmax = np.round(kwargs.get('fmax', 5*fp), 1)
+    fstep = kwargs.get('fstep', 0.1)
+    fticks = np.append(np.arange(-fmax, 0, fstep), np.arange(0, fmax+fstep, fstep)[1:])
     for radii in fticks[fticks > 0]:
         circle = plt.Circle((0,0), radii, color="0.5",
                 linestyle="dashed", fill=False)
@@ -397,10 +411,10 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
     if 'label' in kwargs:
         if kwargs['label']:
             if is_wavenumber:
-                label = "$H_s = %.2f \, \mathrm{m}$\n$\\lambda_p = %.2f \,\mathrm{m}$\
+                label = "$H_{m0} = %.2f \, \mathrm{m}$\n$\\lambda_p = %.2f \,\mathrm{m}$\
                         \n$\\theta_p = %.1f^\circ$" % (Hs, 2*np.pi*Tp, pdir)
             else:
-                label = "$H_s = %.2f \, \mathrm{m}$\n$T_p = %.2f \,\mathrm{s}$\
+                label = "$H_{m0} = %.2f \, \mathrm{m}$\n$T_p = %.2f \,\mathrm{s}$\
                         \n$\\theta_p = %.1f^\circ$" % (Hs, Tp, pdir)
             ax.text(0.01, 0.01, label, transform=ax.transAxes, ha="left", va="bottom")
         else:
