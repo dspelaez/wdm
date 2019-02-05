@@ -317,7 +317,7 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
     #
     # compute directional params
     m = lambda n, p: np.trapz((rads**n)*(D_int**p), x=rads)
-    pdir = np.mod(np.degrees(m(1,4)/m(0,4)) + thetahm, 360)
+    pdir = np.mod(np.degrees(m(1,4)/m(0,4)) + thetam, 360)
 
 
     # checkar si las direcciones son circulares
