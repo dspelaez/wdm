@@ -1,0 +1,1095 @@
+# vim:foldmethod=indent
+# vim:foldnestmax=2
+
+---
+name: bomm1_its
+basepath: "../data/"
+t_ini: '2017-11-17'
+t_fin: '2018-01-31'
+
+title: BOMM1-ITS observations from Nov 2017 to Jan 2018.
+
+summary: >
+  This dataset presents air-sea physical and chemical variables from an
+  Oceanographic and Marine Meteorology buoy (BOMM) near the Isla Todos
+  Santos, Ensenada, BC, México, from Nov 2017 to Jan 2018. This dataset
+  is part of the BOMM observations test period.
+
+keywords: >
+  air-sea momentum flux, air-sea carbon exchange, directional wave spectrum,
+  oceanographic buoy, wave parameters.
+
+comments: >
+  The BOMM1-ITS was deployed on 2017/11/16 and recovered on 2018/02/02.
+
+institution: CICESE - CIGOM
+date_created: 2019/01/26
+creator_name: The waves group - CICESE
+creator_url: https://www.cicese.mx/
+creator_email: oleaje@cigom.org
+contributor_name: D.S.P. Zapata, F.J. Ocampo-Torres, R. Durazo
+contributor_role: Dataset creator, Principal Investigator (PI), Research line coordinator
+contributor_email: dspelaez@gmail.com, ocampo@cicese.mx, rdurazo@cicese.mx
+acknowledgments: >
+  This research has been funded by Fondo Sectorial CONACYT-SENER
+  Hidrocarburos, Project 201441.
+
+references: |
+  Anctil, Donelan, Drennan, Graber, (1994). JAOT 11(4):1144–1150.
+  Donelan, Drennan, Magnusson, (1996). JPO, 26(9):1901–1914.
+  Ocampo-Torres, García-Nava, Durazo, Osuna, Méndez, Graber, (2010). BLM, 138(3):433–451.
+
+convention: CF-1.7
+
+
+# ---------------------------------------------------------- 
+# from now, these metada correspond to the level 1 variables
+# ----------------------------------------------------------
+sensors:
+  
+  ekinox:
+    sampling_frequency: 100
+    seconds_per_file: 600
+    serial_number : 024000042
+    description: MRU Subsea Ekinox2-M
+    convention: X positive towards north buoy, Y eastward and Z downward
+    variables:
+      accel_x:
+        column: 6
+        long_name: acceleration in X direction
+        units: m/s^2
+      accel_y:
+        column: 7
+        long_name: acceleration in Y direction
+        units: m/s^2
+      accel_z:
+        column: 8
+        long_name: acceleration in Z direction
+        units: m/s^2
+      gyro_x:
+        column: 9
+        long_name: rate of change of the angle in X direction
+        units: rad/s
+      gyro_y:
+        column: 10
+        long_name: rate of change of the angle in Y direction
+        units: rad/s
+      gyro_z:
+        column: 11
+        long_name: rate of change of the angle in Z direction
+        units: rad/s
+      delta_vel_x:
+        column: 12
+        long_name: sculling output in X direction
+        units: m/s^2
+      delta_vel_y:
+        column: 13
+        long_name: sculling output in Y direction
+        units: m/s^2
+      delta_vel_z:
+        column: 14
+        long_name: sculling output in Z direction
+        units: m/s^2
+      delta_ang_x:
+        column: 16
+        long_name: coning output in X direction
+        units: rad/s
+      delta_ang_y:
+        column: 17
+        long_name: coning output in Y direction
+        units: rad/s
+      delta_ang_z:
+        column: 18
+        long_name: coning output in Z direction
+        units: rad/s
+      temp:
+        column: 15
+        long_name: sensor temperature
+        units: degrees_celsius
+  
+  sonic:
+    sampling_frequency: 100
+    seconds_per_file: 600
+    serial_number : 163807
+    description: Gill Instruments R3-100 3D sonic anemometer
+    sonic_angle: -5
+    sonic_height: 6.5
+    convention: >
+      Positive U points 30 degrees CCW from the north mark and V is 120
+      degrees.  It is necessary to apply a coordinate rotation to be consistent
+      with the BOMM frame of reference.
+    variables:
+      u_wind:
+        column: 5
+        long_name: u-component of wind velocity
+        units: m/s
+      v_wind:
+        column: 6
+        long_name: v-component of wind velocity
+        units: m/s
+      w_wind:
+        column: 7
+        long_name: W-component of wind velocity
+        units: m/s
+      sonic_temp:
+        column: 8
+        long_name: sonic temperature
+        units: degrees_celsius
+
+  gps:
+    sampling_frequency: 10
+    seconds_per_file: 600
+    serial_number : 2J5050489
+    description: GPS Garmin 19x HSV
+    variables:
+      status:
+        column: 5
+        long_name: signal status
+        units: string
+      latitude:
+        column: 6
+        long_name: latitude
+        units: degrees DDMM.SS
+      lat_sign:
+        column: 7
+        long_name: latitude N/S
+        units: string
+      longitude:
+        column: 8
+        long_name: longitude
+        units: degrees DDDMM.SS
+      lon_sign:
+        column: 9
+        long_name: longitude E/W
+        units: string
+      ground_speed:
+        column: 10
+        long_name: speed over ground
+        units: knots
+      track_ang:
+        column: 11
+        long_name: tracking angle
+        units: degrees
+      mag_var:
+        column: 13
+        long_name: Magnetic variation
+        units: degrees
+
+  marvi:
+    sampling_frequency: 100
+    seconds_per_file: 600
+    serial_number : NA
+    description: Modulo de Adquisición y Regulación de Voltaje Inteligente
+    variables:
+      temperature:
+        column: 4
+        long_name: temperature of electronics housing
+        units: degrees_celsius
+      pressure:
+        column: 5
+        long_name: pressure of the housing
+        units: string
+      humidity:
+        column: 6
+        long_name: housing moisture
+        units: percentage
+      accel_x:
+        column: 7
+        long_name: acceleration in x
+        units: m/s^2
+      accel_y:
+        column: 8
+        long_name: acceleration in y
+        units: m/s^2
+      accel_z:
+        column: 9
+        long_name: acceleration in z
+        units: m/s^2
+      temp_acc:
+        column: 10
+        long_name: temperature of the accelerometer
+        units: string
+      gyro_x:
+        column: 11
+        long_name: gyroscope in x
+        units: rad/s
+      gyro_y:
+        column: 12
+        long_name: gyroscope in y
+        units: rad/s
+      gyro_z:
+        column: 13
+        long_name: gyroscope in z
+        units: rad/s
+      volt:
+        column: 14
+        long_name: battery voltage
+        units: V
+
+  maximet:
+    sampling_frequency: 1
+    seconds_per_file: 3600
+    serial_number : 16430037
+    description: Gill GMX-600 compact weather station
+    maximet_angle: 60
+    convention: >
+      Wind direction uses meteorological convention, i.e. the angle points the
+      direction from the wind comes and it is measured CW from north. The
+      Maximet north mark is oriented 60 degrees respect to the BOMM north.
+    variables:
+      relative_wind_dir:
+        column: 4
+        long_name: wind direction relative to sensor mark
+        units: azimuth_degrees
+      wind_speed:
+        column: 5
+        long_name: average wind speed
+        units: m/s
+      true_wind_dir:
+        column: 6
+        long_name: wind direction relative to magnetic north
+        units: azimuth_degrees
+      atm_pressure:
+        column: 7
+        long_name: atmospheric pressure at sea level
+        units: mbar
+      rel_humidity:
+        column: 8
+        long_name: relative humidity of air
+        units: percentage
+      air_temp:
+        column: 9
+        long_name: air temperature
+        units: degrees_celsius
+      dew_point:
+        column: 10
+        long_name: dew point
+        units: degrees_celsius
+      total_rain:
+        column: 11
+        long_name: total amount of precipitation
+        units: mm
+      rain_intensity:
+        column: 12
+        long_name: intensity of precipitation
+        units: mm/h
+      volt:
+        column: 13
+        long_name: battery voltage
+        units: V
+
+  proceanus:
+    sampling_frequency: 1/1800
+    seconds_per_file: 86400
+    serial_number : 35-270-50A
+    description: CO2 Pro-Atmosphere
+    variables:
+      air_co2:
+        column: 4
+        long_name: air-side co2 concentration
+        units: ppm
+      air_irga_temp:
+        column: 5
+        long_name: air-side irga temperature
+        units: degrees_celsius
+      air_humidity:
+        column: 6
+        long_name: air-side humidity as vapour partial pressure
+        units: mbar
+      air_hum_sensor_temp:
+        column: 7
+        long_name: air-side temperature of the humidity sensor
+        units: degrees_celsius
+      air_gas_pres:
+        column: 8
+        long_name: air-side gas stream pressure
+        units: mbar
+      wat_co2:
+        column: 13
+        long_name: water-side co2 concentration
+        units: ppm
+      wat_irga_temp:
+        column: 14
+        long_name: air-side irga temperature
+        units: degrees_celsius
+      wat_humidity:
+        column: 15
+        long_name: water-side humidity as vapour partial pressure
+        units: mbar
+      wat_hum_sensor_temp:
+        column: 16
+        long_name: water-side temperature of the humidity sensor
+        units: degrees_celsius
+      wat_gas_pres:
+        column: 17
+        long_name: water-side gas stream pressure
+        units: mbar
+      battery_volt:
+        column: 18
+        long_name: battery voltage
+        units: V
+      board_temp:
+        column: 19
+        long_name: temperature of the electronic board
+        units: degrees_celsius
+      zero_ad:
+        column: 11
+        long_name: zero counter of of most recent auto-zero sequence
+        units: counts
+      curr_ad:
+        column: 12
+        long_name: zero counter of of most recent auto-zero sequence
+        units: counts
+
+  rbr:
+    sampling_frequency: 1/600
+    seconds_per_file: 86400
+    serial_number : 62544
+    description: CTD+02+pH sensor RBR Concerto
+    variables:
+      conductivity:
+        column: 4
+        long_name: sea water conductivity
+        units: mS/cm
+      temperature:
+        column: 5
+        long_name: sea water temperature
+        units: degrees_celsius
+      abs_pressure:
+        column: 6
+        long_name: absolute pressure
+        units: dbar
+      dissoxy:
+        column: 7
+        long_name: sea water dissolved oxygen
+        units: percentage
+      ph:
+        column: 8
+        long_name: pH of sea water
+        units: units
+      pressure:
+        column: 9
+        long_name: water pressure
+        units: dbar
+      depth:
+        column: 10
+        long_name: instrument depth
+        units: m
+      salinity:
+        column: 11
+        long_name: sea water salinity
+        units: ppm
+      sound_speed:
+        column: 12
+        long_name: sound speed in the water
+        units: m/s
+      specific_cond:
+        column: 13
+        long_name: specific conductance
+        units: uS/cm
+
+  signature:
+    sampling_frequency: 8
+    seconds_per_file: 600
+    serial_number : 100423
+    description: AD2CP Nortek Signature 1000 kHz
+    convention: The vertical axis of the sensor is tilted 25 degrees towards the X axis
+    beams: [1,2,3,5]
+    ncell: 10
+    variables:
+      sound_speed:
+        column: 4
+        long_name: speed of sound
+        units : m/s
+      temperature:
+        column: 5
+        long_name: water temperature
+        units : degrees_celsius
+      pressure:
+        column: 6
+        long_name: water pressure
+        units : mbar
+      heading:
+        column: 7
+        long_name: heading angle
+        units : 100_times_degrees
+      pitch:
+        column: 8
+        long_name: pitch angle
+        units : 100_times_degrees
+      roll:
+        column: 9
+        long_name: roll angle
+        units : 100_times_degrees
+      cell_size:
+        column: 10
+        long_name: cell size
+        units : cm
+      blanking:
+        column: 11
+        long_name: blanking distance
+        units : cm
+      nominal_corr:
+        column: 12
+        long_name: nominal correlation
+        units : percentage
+      temp_sens_pres:
+        column: 13
+        long_name: temperature of the pressure sensor
+        units : degrees_celsius
+      vbat:
+        column: 14
+        long_name: battery voltage
+        units : V
+      mag_x:
+        column: 15
+        long_name: x-component of the magnetic field
+        units : counts
+      mag_y:
+        column: 16
+        long_name: y-component of the magnetic field
+        units : counts
+      mag_z:
+        column: 17
+        long_name: z-component of the magnetic field
+        units : counts
+      accel_x:
+        column: 18
+        long_name: acceleration in the x direction
+        units : counts
+      accel_y:
+        column: 19
+        long_name: acceleration in the y direction
+        units : counts
+      accel_z:
+        column: 20
+        long_name: acceleration in the z direction
+        units : counts
+      amb_vel:
+        column: 21
+        long_name: ambiguous velocity
+        units : m/s
+      trans_energy:
+        column: 22
+        long_name: transmit energy
+        units : unknown
+      vel_scaling:
+        column: 23
+        long_name: velocity scaling
+        units : unknown
+      power_level:
+        column: 24
+        long_name: power level
+        units : dB
+      temp_mag:
+        column: 25
+        long_name: magnetometer temperature
+        units : degrees_celsius
+      temp_rtc:
+        column: 26
+        long_name: real-time clock sensor temperature
+        units : degrees_celsius
+      ens_count:
+        column: 27
+        long_name: ensamble counter
+        units : counts
+      vel_b1:
+        column: [82,91]
+        long_name: velocity along beam 1
+        units : mm/s
+      vel_b2:
+        column: [92,101]
+        long_name: velocity along beam 2
+        units : mm/s
+      vel_b3:
+        column: [102,111]
+        long_name: velocity along beam 3
+        units : mm/s
+      vel_b5:
+        column: [28,37]
+        long_name: velocity along beam 5
+        units : mm/s
+      amp_b1:
+        column: [112,121]
+        long_name: backscatter amplitude along beam 1
+        units : counts
+      amp_b2:
+        column: [122,131]
+        long_name: backscatter amplitude along beam 2
+        units : counts
+      amp_b3:
+        column: [132,141]
+        long_name: backscatter amplitude along beam 3
+        units : counts
+      amp_b5:
+        column: [38,47]
+        long_name: backscatter amplitude along beam 5
+        units : counts
+      cor_b1:
+        column: [142,151]
+        long_name: correlation along beam 1
+        units : percentage
+      cor_b2:
+        column: [152,161]
+        long_name: correlation along beam 2
+        units : percentage
+      cor_b3:
+        column: [162,171]
+        long_name: correlation along beam 3
+        units : percentage
+      cor_b5:
+        column: [48,57]
+        long_name: correlation along beam 5
+        units : percentage
+
+  vector:
+    sampling_frequency: 64
+    seconds_per_file: 600
+    serial_number : VEH5262
+    description: Acoustic Doppler Velocimeter (ADV) Nortek Vector 1MHz
+    variables:
+      delta_ang_x:
+        column: 4
+        long_name: delta of the angle in x direction
+        units: rad
+      delta_ang_y:
+        column: 5
+        long_name: delta of the angle in y direction
+        units: rad
+      delta_ang_z:
+        column: 6
+        long_name: delta of the angle in z direction
+        units: rad
+      delta_vel_x:
+        column: 7
+        long_name: delta velocity in x direction
+        units: m/s
+      delta_vel_y:
+        column: 8
+        long_name: delta velocity in y direction
+        units: m/s
+      delta_vel_z:
+        column: 9
+        long_name: delta velocity in z direction
+        units: m/s
+      matrix_11:
+        column: 10
+        long_name: component 11  of the rotation matrix
+        units: dimensionless
+      matrix_12:
+        column: 11
+        long_name: component 12  of the rotation matrix
+        units: dimensionless
+      matrix_13:
+        column: 12
+        long_name: component 13  of the rotation matrix
+        units: dimensionless
+      matrix_21:
+        column: 13
+        long_name: component 21  of the rotation matrix
+        units: dimensionless
+      matrix_22:
+        column: 14
+        long_name: component 22  of the rotation matrix
+        units: dimensionless
+      matrix_23:
+        column: 15
+        long_name: component 23  of the rotation matrix
+        units: dimensionless
+      matrix_31:
+        column: 16
+        long_name: component 31  of the rotation matrix
+        units: dimensionless
+      matrix_32:
+        column: 17
+        long_name: component 32  of the rotation matrix
+        units: dimensionless
+      matrix_33:
+        column: 18
+        long_name: component 33  of the rotation matrix
+        units: dimensionless
+      pressure:
+        column: 19
+        long_name: sea water pressure in the sensor head
+        units: mbar
+      vel_b1:
+        column: 20
+        long_name: velocity in the beam 1
+        units: mm/s
+      vel_b2:
+        column: 21
+        long_name: velocity in the beam 2
+        units: mm/s
+      vel_b3:
+        column: 22
+        long_name: velocity in the beam 3
+        units: mm/s
+
+  wstaff:
+    sampling_frequency: 20
+    seconds_per_file: 600
+    serial_number : OSSI-010-002F3.5
+    wires_used: [1, 2, 3, 4, 5, 6]
+    electronics_used: [1, 2, 3, 4, 5, 6]
+    valid_wires: [2, 3, 4, 5, 6]
+    x_coordinates: [0.00, -0.87, -0.25,  0.71,  0.69, -0.28]
+    y_coordinates: [0.00, -0.02, -0.83, -0.50,  0.52,  0.82]
+    description: Pentagon-shape array of six Wave Staff capacitance wires
+    correction_factor: '3.5/4095'
+    variables:
+      ws1:
+        column: 4
+        long_name: surface elevation in wavestaff 1
+        units : counts
+      ws2:
+        column: 5
+        long_name: surface elevation in wavestaff 2
+        units : counts
+      ws3:
+        column: 6
+        long_name: surface elevation in wavestaff 3
+        units : counts
+      ws4:
+        column: 7
+        long_name: surface elevation in wavestaff 4
+        units : counts
+      ws5:
+        column: 8
+        long_name: surface elevation in wavestaff 5
+        units : counts
+      ws6:
+        column: 9
+        long_name: surface elevation in wavestaff 6
+        units : counts
+
+
+# ---------------------------------------------------------- 
+# from now, these metada correspond to the level 2 variables
+# ----------------------------------------------------------
+processed_variables:
+
+  dimensions:
+    ffrq: 256
+    wfrq: 97
+    dirs: 360
+    z_profile: 10
+
+  roll:
+    standard_name: average_roll_angle
+    long_name: average roll angle
+    units: degrees
+    convention: math convention; rotation around earth X (east-ward) axis
+    source: ekinox
+    valid_range: [-180, 180]
+    dimensions: time
+
+  pitch:
+    standard_name: average_pitch_angle
+    long_name: average pitch angle
+    units: degrees
+    convention: math convention; rotation around earth Y (north-ward) axis
+    source: ekinox
+    valid_range: [-180, 180]
+    dimensions: time
+
+  heading:
+    standard_name: average_heading_angle
+    long_name: average heading angle
+    units: degrees
+    convention: math convention; angle measured from the east positive counter-clockwise
+    source: ekinox
+    valid_range: [-180, 180]
+    dimensions: time
+
+  tWdir:
+    standard_name: true_wind_direction
+    long_name: wind direction relative to true north
+    units: degrees
+    convention: meterological convention; angle from north, positive clockwise, wind coming from
+    source: maximet
+    valid_range: [-360, 360]
+    dimensions: time
+
+  rWdir:
+    standard_name: relative_wind_direction
+    long_name: wind direction relative to sensor mark
+    units: degrees
+    convention: meteorological convention; angle from sensor mark, positive clockwise, wind coming from
+    comments: the sensor mark points 60 degrees counter-clockwise from the buoy north
+    source: maximet
+    valid_range: [-360, 360]
+    dimensions: time
+
+  Wspd:
+    standard_name: wind_speed
+    long_name: average wind speed at the buoy mast
+    units: m/s
+    sensor_height: 5.5
+    source: maximet
+    valid_range: [0, 50]
+    dimensions: time
+
+  Pa:
+    standard_name: air_pressure
+    long_name: atmospheric pressure at sea level
+    units: hPa
+    source: maximet
+    valid_range: [800, 1100]
+    dimensions: time
+
+  Ta:
+    standard_name: air_temperature
+    long_name: air temperature at the buoy mast
+    units: degrees_celsius
+    source: maximet
+    valid_range: [-10, 50]
+    dimensions: time
+
+  rhum:
+    standard_name: relative_humidity
+    long_name: relative humidity
+    units: percentage
+    source: maximet
+    valid_range: [0, 100]
+    dimensions: time
+
+  DP:
+    standard_name: dew_point_temperature
+    long_name: dew point temperature
+    units: degrees_celsius
+    source: maximet
+    valid_range: [-60, 40]
+    dimensions: time
+
+  total_rain:
+    standard_name: total_rainfall
+    long_name: total amount of rainfall
+    units: mm
+    source: maximet
+    valid_range: [0, 1000]
+    dimensions: time
+
+  rain_rate:
+    standard_name: rainfall_rate
+    long_name: rainfall rate
+    units: mm/h
+    source: maximet
+    valid_range: [0, 1000]
+    dimensions: time
+
+  aCO2:
+    standard_name: air_co2
+    long_name: air-side CO2 concentration
+    units: ppm
+    source: proceanus
+    valid_range: [100, 600]
+    dimensions: time
+
+  wCO2:
+    standard_name: water_co2
+    long_name: water-side CO2 concentration
+    units: ppm
+    source: proceanus
+    valid_range: [100, 600]
+    dimensions: time
+
+  ahum:
+    standard_name: air_humidity
+    long_name: absolute air humidity
+    units: mbar
+    source: proceanus
+    valid_range: [0, 100]
+    dimensions: time
+
+  rhoa:
+    standard_name: air_density
+    long_name: air density
+    units: kg/m3
+    source: derived from maximet
+    valid_range: [0.8, 1.8]
+    dimensions: time
+
+  lat:
+    standard_name: latitude
+    long_name: latitude
+    units: degrees_north
+    source: gps
+    valid_range: [-90., 90.]
+    dimensions: time
+
+  lon:
+    standard_name: longitude
+    long_name: longitude
+    units: degrees_east
+    source: gps
+    valid_range: [-360., 360.]
+    dimensions: time
+
+  pH:
+    standard_name: pH
+    long_name: pH of the sea water
+    units: units
+    source: rbr
+    valid_range: [7.5, 8.5]
+    dimensions: time
+
+  Sw:
+    standard_name: water_salinity
+    long_name: sea water salinity
+    units: ppm
+    source: rbr
+    valid_range: [33.3, 35]
+    dimensions: time
+
+  Tw:
+    standard_name: water_temperature
+    long_name: water temperature
+    units: degrees_celsius
+    source: rbr
+    valid_range: [0, 100]
+    dimensions: time
+
+  Cw:
+    standard_name: water_conductivity
+    long_name: water conductivity
+    units: mS/cm
+    source: bomm
+    valid_range: [40, 45]
+    dimensions: time
+
+  rhow:
+    standard_name: water_density
+    long_name: sea water density
+    units: kg/m3
+    source: derived from rbr using TEOS10
+    valid_range: [1000, 1050]
+    dimensions: time
+
+  depth:
+    standard_name: water_depth
+    long_name: water depth
+    units: m
+    source: rbr
+    valid_range: [6, 9]
+    dimensions: time
+
+  dissoxy:
+    standard_name: dissolved_oxygen
+    long_name: dissolved oxygen
+    units: percentage
+    source: rbr
+    valid_range: [0, 200]
+    dimensions: time
+
+  S:
+    standard_name: frequency_wave_spectrum
+    long_name: frequency wave spectrum
+    units: m2/Hz
+    source: wstaff, ekinox
+    valid_range: [0, 1000]
+    dimensions: time, ffrq
+
+  E:
+    standard_name: directional_wave_spectrum
+    long_name: directional wave spectrum from wavelet directional method
+    units: m2/Hz/rad
+    source: wstaff, ekinox
+    valid_range: [0, 1000]
+    dimensions: time, dirs, wfrq
+
+  Hm0:
+    standard_name: significant_wave_height
+    long_name: significant wave height
+    units: m
+    source: wstaff, ekinox
+    valid_range: [0, 20]
+    dimensions: time
+
+  Tp:
+    standard_name: peak_wave_period
+    long_name: robust peak wave period
+    units: s
+    source: wstaff, ekinox
+    valid_range: [0, 20]
+    dimensions: time
+
+  pDir:
+    standard_name: peak_wave_direction
+    long_name: peak wave direction
+    units: degrees
+    convention: math convention; angle measured from east, positve counter-clockwise, towards waves go
+    source: wstaff, ekinox
+    valid_range: [-360, 360]
+    dimensions: time
+
+  mDir:
+    standard_name: average_wave_direction
+    long_name: average wave direction
+    units: degrees
+    convention: math convention; angle measured from east, positve counter-clockwise, towards waves go
+    source: wstaff, ekinox
+    valid_range: [-360, 360]
+    dimensions: time
+
+  Us0:
+    standard_name: surface_stokes_drift
+    long_name: surface stokes drift
+    units: m/s
+    source: wstaff, ekinox
+    valid_range: [0, 0.7]
+    dimensions: time
+
+  Ua:
+    standard_name: eastward_wind_component
+    long_name: eastward wind component
+    units: m/s
+    sensor_height: 6.5
+    source: sonic
+    valid_range: [-50, 50]
+    dimensions: time
+
+  Va:
+    standard_name: northward_wind_component
+    long_name: northward wind component
+    units: m/s
+    sensor_height: 6.5
+    source: sonic
+    valid_range: [-50, 50]
+    dimensions: time
+
+  Ts:
+    standard_name: sonic_air_temperature
+    long_name: sonic air temperature
+    units: degrees_celsius
+    source: sonic
+    valid_range: [0, 100]
+    dimensions: time
+
+  uw:
+    standard_name: upward_eastward_turbulent_wind_correlation
+    long_name: upward eastward turbulent wind correlation
+    units: m2/s2
+    source: sonic
+    valid_range: [-1,1]
+    dimensions: time
+
+  vw:
+    standard_name: upward_northward_turbulent_wind_correlation
+    long_name: upward northward turbulent wind correlation
+    units: m2/s2
+    source: sonic
+    valid_range: [-1,1]
+    dimensions: time
+
+  wT:
+    standard_name: upward_sensible_heat_flux
+    long_name: upward sensible heat flux
+    units: Km/ s
+    source: sonic
+    valid_range: [-1,1]
+    dimensions: time
+
+  ustar:
+    standard_name: airside_friction_velocity
+    long_name: airside friction velocity
+    units: m/s
+    source: sonic, maximet
+    valid_range: [0,1]
+    dimensions: time
+
+  wstar:
+    standard_name: waterside_friction_velocity
+    long_name: waterside friction velocity
+    units: m/s
+    source: sonic, maximet, rbr
+    valid_range: [0, 0.1]
+    dimensions: time
+
+  U10N:
+    standard_name: 10m_neutral_wind_speed
+    long_name: 10m wind speed at neutral conditions
+    units: m/s
+    source: sonic, ekinox, maximet, rbr
+    valid_range: [0, 50]
+    dimensions: time
+
+  zL:
+    standard_name: monin_obukhov_stability_parameter
+    long_name: monin obukhov stability parameter
+    units: m
+    source: sonic, ekinox, maximet
+    valid_range: [-1000, 1000]
+    dimensions: time
+
+  v1:
+    standard_name: vector_beam1_velocity
+    long_name: vector beam1 velocity
+    units: m/s
+    source: vector
+    dimensions: time
+
+  v2:
+    standard_name: vector_beam2_velocity
+    long_name: vector beam2 velocity
+    units: m/s
+    source: vector
+    dimensions: time
+
+  v3:
+    standard_name: vector_beam3_velocity
+    long_name: vector beam3 velocity
+    units: m/s
+    source: vector
+    dimensions: time
+
+  vel_b1:
+    standard_name: signature_beam1_velocity
+    long_name: signature beam1 velocity
+    units: m/s
+    source: signature
+    dimensions: time, z_profile
+
+  vel_b2:
+    standard_name: signature_beam2_velocity
+    long_name: signature beam2 velocity
+    units: m/s
+    source: signature
+    dimensions: time, z_profile
+
+  vel_b3:
+    standard_name: signature_beam3_velocity
+    long_name: signature beam3 velocity
+    units: m/s
+    source: signature
+    dimensions: time, z_profile
+
+  vel_b4:
+    standard_name: signature_beam4_velocity
+    long_name: signature beam4 velocity
+    units: m/s
+    source: signature
+    dimensions: time, z_profile
+
+  Ti:
+    standard_name: internal_temperature
+    long_name: cylinder internal temperature
+    units: degrees_celsius
+    source: marvi
+    valid_range: [0, 100]
+    dimensions: time
+
+  Pi:
+    standard_name: internal_pressure
+    long_name: cylinder internal pressure
+    units: mbar
+    source: marvi
+    valid_range: [0, 2000]
+    dimensions: time
+
+  Hi:
+    standard_name: internal_humidity
+    long_name: cylinder internal humidity
+    units: percentage
+    source: marvi
+    valid_range: [0, 100]
+    dimensions: time
