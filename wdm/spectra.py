@@ -339,8 +339,8 @@ def polar_spectrum(frqs, dirs, S, thetam=0, **kwargs):
 
     # define energy limits
     with np.errstate(divide='ignore'):
-        smin = kwargs.get('smin', np.ceil(np.max([-7, np.log10(S.min())])))
-        smax = kwargs.get('smax', np.floor(np.min([7, np.log10(S.max())]))+1)
+        smin = 1.*kwargs.get('smin', np.ceil(np.max([-7, np.log10(S.min())])))
+        smax = 1.*kwargs.get('smax', np.floor(np.min([7, np.log10(S.max())]))+1)
 
 
     # draw frequency/wavenumber circles 
