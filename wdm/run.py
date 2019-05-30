@@ -25,6 +25,27 @@ from read_data import ReadRawData
 class ProcessingData(object):
 
     """
+    This class contains funcion to get the directional wave spectra from the
+    BOMM SSD using the Wavelet Directional Method (WDM)
+
+    Usage:
+
+        # define the path of the metadata file
+        >> metafile = "../metadata/bomm1_its.yml"
+        
+        # define the specific date
+        >> date = dt.datetime(2017,11,17,0,0)
+
+        # create instance of the main class
+        >> p = ProcessingData(metafile, date)
+
+        # load the data, perform motion_correction and get_spectrum
+        >> p.read_data()
+        >> p.get_directional_spectrum()
+        >> p.write_directional_spectrum()
+
+        # [optional] get the wave parameters
+        >> p.get_wave_parameters()
     """
 
     # private methods {{{
@@ -32,6 +53,7 @@ class ProcessingData(object):
         """Function to initialize the class.
 
         Args:
+            metafile (str): filename containing the metadata
             date (datetime): datetime object
         """
 
@@ -242,7 +264,7 @@ class ProcessingData(object):
     # }}}
 
     # motion matrices {{{
-    def motion_correction(self):
+    def motion_matrices(self):
         """Matrices of the accelerometer, gyroscope and euler angles"""
 
         # check for anomalous data
@@ -300,6 +322,9 @@ class ProcessingData(object):
 
         # TODO: check wavestaff standar deviation
 
+        # get motion matrices
+        self.motion_matrices()
+
         # check waestaffs in use
         valid_wires = self.metadata["sensors"]["wstaff"]["valid_wires"]
         valid_wires_index = [w - 1 for w in valid_wires]
@@ -349,7 +374,7 @@ class ProcessingData(object):
         dfac = 2
         d = lambda x: x[::dfac,1:]
         wfrq, dirs, E, D = wdm.fdir_spectrum(d(Z), d(X), d(Y), fs=int(fs/dfac),
-                omin=-5, omax=1, nvoice=16, ws=(30, 4))
+                omin=-4, omax=-1, nvoice=16, ws=(30, 4))
         
         # save data in the output dictionary
         list_of_variables = {
@@ -397,9 +422,10 @@ class ProcessingData(object):
     def write_directional_spectrum(self):
         """Write directional spectrum to a file in the disk"""
 
-        E = self.results["E"]
-        filename = "test.spectrum"
-        np.savetxt(filename, E, fmt='%.18e')
+        E = np.uint16(self.results["E"][::5,:] * 1E4)
+        np.savetxt("test.spectrum.txt", E, fmt='%4d')
+        np.save("test.spectrum", E)
+        np.savez_compressed("test.spectrum", E)
         
     # }}}
 
@@ -418,7 +444,6 @@ if __name__ == "__main__":
 
     # load the data, perform motion_correction and get_spectrum
     p.read_data()
-    p.motion_correction()
     p.get_directional_spectrum()
     p.write_directional_spectrum()
 
