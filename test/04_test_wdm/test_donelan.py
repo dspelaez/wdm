@@ -7,7 +7,6 @@
 # Distributed under terms of the GNU/GPL license.
 
 """
-File:     wavestaffs.py
 Created:  2017-04-03 17:53
 Modified: 2017-04-03 17:53
 """
