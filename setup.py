@@ -31,7 +31,7 @@ if __name__ == "__main__":
           packages = find_packages(),
           ext_modules = [ext],
           install_requires = [
-              "numpy==1.14.3",
+              "numpy==1.22.0",
               "scipy==1.1.0",
               "matplotlib==2.2.3"
               ],
