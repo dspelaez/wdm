@@ -32,7 +32,7 @@ if __name__ == "__main__":
           ext_modules = [ext],
           install_requires = [
               "numpy==1.14.3",
-              "scipy==1.1.0",
+              "scipy==1.10.0",
               "matplotlib==2.2.3"
               ],
           zip_safe = False)
